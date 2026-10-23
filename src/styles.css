@@ -1,0 +1,11 @@
+body { background: #f4f7fb; }
+#root { min-height: 100vh; display: flex; flex-direction: column; }
+main { flex: 1; }
+main:focus { outline: none; }
+.hero { background: linear-gradient(115deg, #152b4e, #255ba5); color: white; }
+.producto-card img { height: 190px; object-fit: cover; background: #e6edf6; }
+.admin-thumb { width: 48px; height: 40px; object-fit: cover; }
+.cart-image { width: 80px; height: 65px; object-fit: cover; }
+.formulario-login, .formulario-contacto { max-width: 620px; }
+.saltar-contenido { position: absolute; left: -10000px; z-index: 2000; }
+.saltar-contenido:focus { left: 1rem; top: 1rem; background: white; padding: 1rem; }
