@@ -46,19 +46,57 @@ export function convertirProducto(datos) {
 export function validarContacto(campos) {
   const errores = {};
   if (
-    !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(
-      campos.email.trim(),
-    )
+      !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(
+          campos.email.trim(),
+      )
   )
     errores.email = 'Ingresa un correo electrónico válido.';
   if (!/^[a-zA-ZÁÉÍÓÚáéíóúÑñ0-9\s.,!?¿¡'-]{5,100}$/.test(campos.asunto.trim()))
     errores.asunto = 'El asunto debe tener entre 5 y 100 caracteres válidos.';
   if (
-    !/^[a-zA-ZÁÉÍÓÚáéíóúÑñ0-9\s.,!?¿¡'"\-():;]{10,500}$/.test(
-      campos.mensaje.trim(),
-    )
+      !/^[a-zA-ZÁÉÍÓÚáéíóúÑñ0-9\s.,!?¿¡'"\-():;]{10,500}$/.test(
+          campos.mensaje.trim(),
+      )
   )
     errores.mensaje =
-      'El mensaje debe tener entre 10 y 500 caracteres válidos.';
+        'El mensaje debe tener entre 10 y 500 caracteres válidos.';
   return errores;
+}
+
+export function validarInventario(datos) {
+  const errores = {};
+
+  if (
+      !Number.isInteger(Number(datos.productoId)) ||
+      Number(datos.productoId) <= 0
+  ) {
+    errores.productoId = 'Selecciona un producto válido.';
+  }
+
+  if (
+      String(datos.cantidad).trim() === '' ||
+      !Number.isInteger(Number(datos.cantidad)) ||
+      Number(datos.cantidad) < 0
+  ) {
+    errores.cantidad = 'La cantidad debe ser un entero mayor o igual a cero.';
+  }
+
+  if (
+      String(datos.stockMinimo).trim() === '' ||
+      !Number.isInteger(Number(datos.stockMinimo)) ||
+      Number(datos.stockMinimo) < 0
+  ) {
+    errores.stockMinimo =
+        'El stock mínimo debe ser un entero mayor o igual a cero.';
+  }
+
+  return errores;
+}
+
+export function convertirInventario(datos) {
+  return {
+    productoId: Number(datos.productoId),
+    cantidad: Number(datos.cantidad),
+    stockMinimo: Number(datos.stockMinimo),
+  };
 }

@@ -31,6 +31,11 @@ function conAviso(estado, texto, tipo = 'success') {
 
 export function tiendaReducer(estado, accion) {
   switch (accion.type) {
+    case 'CARGAR_PRODUCTOS':
+      return {
+        ...estado,
+        productos: accion.productos,
+      };
     case 'AGREGAR': {
       const producto = estado.productos.find((p) => p.id === accion.id);
       const item = estado.carrito.find((i) => i.id === accion.id);

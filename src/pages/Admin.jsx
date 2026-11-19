@@ -10,13 +10,36 @@ import ProductoModal from '../components/ProductoModal.jsx';
 import ConfirmarModal from '../components/ConfirmarModal.jsx';
 import { precioCLP, estadoStock } from '../Utils/Formatos.js';
 import { useTienda } from '../Context/TiendaContext.jsx';
+import Alert from 'react-bootstrap/Alert';
+import { solicitudAPI } from "../Services/Api.js";
+import { convertirProducto } from "../Utils/Validaciones.js";
+import { useEffect } from "react";
+import InventarioModal from "../components/InventarioModal.jsx";
+
 
 export default function Admin() {
   const { estado, dispatch } = useTienda();
   const [modal, setModal] = useState(false);
   const [editando, setEditando] = useState(null);
   const [eliminando, setEliminando] = useState(null);
+  const [errorAPI, setErrorAPI] = useState('');
+  const [modalInventario, setModalInventario] = useState(false);
+  const [inventarios, setInventarios] = useState([]);
   const productos = estado.productos;
+
+  useEffect(() => {
+    async function cargarInventario() {
+      try {
+        const datos = await solicitudAPI('/api/inventario');
+        setInventarios(datos);
+      } catch (error) {
+        setErrorAPI(error.message);
+      }
+    }
+
+    cargarInventario();
+  }, []);
+
   function crear() {
     setEditando(null);
     setModal(true);
@@ -25,13 +48,65 @@ export default function Admin() {
     setEditando(producto);
     setModal(true);
   }
-  function guardar(datos, id) {
-    dispatch({ type: 'GUARDAR_PRODUCTO', datos, id });
-    setModal(false);
+  async function guardar(datos, id) {
+    try {
+      setErrorAPI('');
+      const producto = convertirProducto(datos);
+      if (id !== null) {
+        await solicitudAPI(`/api/productos/${id}`, {
+          method: 'PUT',
+          body: JSON.stringify(producto),
+        });
+      } else {
+        await solicitudAPI('/api/productos', {
+          method: 'POST',
+          body: JSON.stringify(producto),
+        });
+      }
+
+      const productosActualizados = await solicitudAPI('/api/productos');
+      dispatch({
+        type: 'CARGAR_PRODUCTOS',
+        productos: productosActualizados,
+      });
+      setModal(false);
+    } catch (error) {
+      setErrorAPI(error.message);
+    }
   }
-  function confirmarEliminar() {
-    dispatch({ type: 'ELIMINAR_PRODUCTO', id: eliminando.id });
-    setEliminando(null);
+
+  async function guardarInventario(datos) {
+    try {
+      setErrorAPI('');
+
+      await solicitudAPI('/api/inventario', {
+        method: 'POST',
+        body: JSON.stringify(datos),
+      });
+
+      const inventarioActualizado = await solicitudAPI('/api/inventario');
+
+      setInventarios(inventarioActualizado);
+      setModalInventario(false);
+    } catch (error) {
+      setErrorAPI(error.message);
+    }
+  }
+  async function confirmarEliminar() {
+    try {
+      setErrorAPI('');
+      await solicitudAPI(`/api/productos/${eliminando.id}`, {
+        method: 'DELETE',
+      });
+      const productosActualizados = await solicitudAPI('/api/productos');
+      dispatch({
+        type: 'CARGAR_PRODUCTOS',
+        productos: productosActualizados,
+      });
+      setEliminando(null);
+    } catch (error) {
+      setErrorAPI(error.message);
+    }
   }
   const resumen = [
     { titulo: 'Productos', valor: productos.length },
@@ -62,6 +137,18 @@ export default function Admin() {
       <Button className="mb-3" onClick={crear}>
         Nuevo producto
       </Button>
+      <Button
+          className="mb-3 ms-2"
+          variant="success"
+          onClick={() => setModalInventario(true)}
+      >
+        Registrar inventario
+      </Button>
+      {errorAPI && (
+          <Alert variant="danger" dismissible onClose={() => setErrorAPI('')}>
+            No se pudo completar la operación: {errorAPI}
+          </Alert>
+      )}
       <Table responsive striped hover>
         <thead>
           <tr>
@@ -132,6 +219,43 @@ export default function Admin() {
           )}
         </tbody>
       </Table>
+      <h2 className="h4 mt-4">Inventario</h2>
+
+      <Table responsive striped hover>
+        <thead>
+        <tr>
+          <th>ID</th>
+          <th>Producto</th>
+          <th>Cantidad disponible</th>
+          <th>Stock mínimo</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        {inventarios.length ? (
+            inventarios.map((item) => {
+              const producto = productos.find(
+                  (p) => Number(p.id) === Number(item.productoId)
+              );
+
+              return (
+                  <tr key={item.id}>
+                    <td>{item.id}</td>
+                    <td>
+                      {producto?.nombre ?? `Producto ID ${item.productoId}`}
+                    </td>
+                    <td>{item.cantidad}</td>
+                    <td>{item.stockMinimo}</td>
+                  </tr>
+              );
+            })
+        ) : (
+            <tr>
+              <td colSpan={4}>No hay registros de inventario.</td>
+            </tr>
+        )}
+        </tbody>
+      </Table>
       {modal && (
         <ProductoModal
           producto={editando}
@@ -139,6 +263,13 @@ export default function Admin() {
           guardar={guardar}
           cerrar={() => setModal(false)}
         />
+      )}
+      {modalInventario && (
+          <InventarioModal
+              productos={productos}
+              guardar={guardarInventario}
+              cerrar={() => setModalInventario(false)}
+          />
       )}
       <ConfirmarModal
         abierto={eliminando !== null}

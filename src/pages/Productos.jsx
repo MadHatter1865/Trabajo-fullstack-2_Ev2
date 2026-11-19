@@ -11,6 +11,7 @@ import { useTienda } from '../Context/TiendaContext.jsx';
 
 export default function Productos() {
   const { estado, dispatch } = useTienda();
+  console.log('PRODUCTOS EN REACT:', estado.productos);
   const [texto, setTexto] = useState('');
   const [categoria, setCategoria] = useState('');
   const [disponibilidad, setDisponibilidad] = useState('');

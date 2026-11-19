@@ -30,7 +30,7 @@ export default function Inicio() {
     <>
       <section className="hero py-5">
         <Container className="text-center py-4">
-          <h1 className="display-4 fw-bold">Herramientas para cas y jardin</h1>
+          <h1 className="display-4 fw-bold">Herramientas para casa y jardin</h1>
           <p className="lead">
             Todo lo que necesitas para arreglar tu hogar
           </p>
