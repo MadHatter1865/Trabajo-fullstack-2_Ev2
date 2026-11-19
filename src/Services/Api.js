@@ -1,4 +1,4 @@
-const API_URL = 'http://3.216.153.110:8080';
+const API_URL = 'https://ferreteria-backend.duckdns.org';
 
 export async function solicitudAPI(ruta, opciones = {}) {
     const respuesta = await fetch(`${API_URL}${ruta}`, {
